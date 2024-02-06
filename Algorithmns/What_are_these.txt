@@ -1,0 +1,3 @@
+These are the algorithms and data structures covered in my algorithms and data structures module, 
+in addition to a couple that I just found and decided to implement. For that reason, some of them
+may have innefficient or unoptimal performance since they are for understanding purposes.
