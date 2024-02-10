@@ -194,11 +194,5 @@ int main(void){
     printf("symmetry property is %d\n", check_heap_symmetry_property(heap));
     printf("the dequeued value is %d and the length is now %d\n", heap_max_delete(heap), heap->current_length);
     printf("%d is heap prop now\n", check_heap_order_property(heap));
-    
 
-    while (heap->current_length > 2){
-        printf("%d %d \n", heap_max_delete(heap), check_heap_order_property(heap));
-        // print_binary_heap(heap);
-        // printf("\n\n\n");
-    }
 }
