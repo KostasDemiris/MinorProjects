@@ -30,11 +30,11 @@ pair* create_new_pair(int value, int priority){
 void heap_swim(binaryHeap* heap){
     int index = heap->current_length;
     while ((int) index/2 >= 1){
-        if (heap->pairs[index]->priority < heap->pairs[(int) index/2]->priority) {return;}
+        if (heap->pairs[index]->priority <= heap->pairs[(int) index/2]->priority) {return;}
         pair* temp = heap->pairs[index];
         heap->pairs[index] = heap->pairs[(int) index/2];
         heap->pairs[(int) index/2] = temp;
-        index = (int) index/2;
+       index = (int) index/2;
     }
 }
 
@@ -42,9 +42,10 @@ void heap_insert(binaryHeap* heap, int value, int priority){
     if (heap->current_length == 0) {
         heap->pairs[1] = create_new_pair(value, priority);
         heap->current_length++;
+        return;
         }
     if (heap->current_length == heap->max_length) {
-        // only insert the value if it has more priority than the least prioritised current element;
+        // If the heap is full, only insert the value if it has more priority than the least prioritised current element;
         if (heap->pairs[heap->max_length]->priority < priority){
             free(heap->pairs[heap->max_length]);
             heap->pairs[heap->max_length] = create_new_pair(value, priority);
@@ -60,58 +61,78 @@ void heap_insert(binaryHeap* heap, int value, int priority){
 
 void heap_sink(binaryHeap* heap){
     int index = 1;
+
     while (index < heap->current_length){
-        if ((index*2)+1 < heap->current_length){
-            if (heap->pairs[(index*2)+1]->priority < heap->pairs[index]->priority && heap->pairs[index*2]->priority < heap->pairs[index]->priority){
-                // this means the heap order has been restored
-                return;
-            }
-            if (heap->pairs[(index*2)+1]->priority > heap->pairs[index*2]->priority){
-                pair* temp = heap->pairs[index];
-                heap->pairs[index] = heap->pairs[(index*2)+1];
-                heap->pairs[(index*2)+1] = temp;
-                index = (index*2) + 1;
-            }
-            else{
-                if (heap->pairs[(index*2)+1]->priority < heap->pairs[index*2]->priority){
-                    pair* temp = heap->pairs[index];
-                    heap->pairs[index] = heap->pairs[index*2];
-                    heap->pairs[index*2] = temp;
-                    index *= 2;
-                }
-                else{
-                    return;
-                }
-            }
-            
-        }
-        else{
-            if (index*2 < heap->current_length){
-                if (heap->pairs[index*2]->priority < heap->pairs[index]->priority){
-                    // again, restored heap order.
-                    return;
-                }
-                pair* temp = heap->pairs[index];
-                heap->pairs[index] = heap->pairs[index*2];
-                heap->pairs[index*2] = temp;
-                index *= 2;
-            }
-            else{
-                // it's a leaf node so to speak, so naturally order has been restored.
-                return;
+        int add = 0;
+        if (index*2 <= heap->current_length){
+            if (heap->pairs[index*2]->priority > heap->pairs[index]->priority){
+                add = index*2;
             }
         }
-        
+        if ((index*2)+1 <= heap->current_length){
+            if (heap->pairs[(index*2)+1]->priority > heap->pairs[index]->priority && heap->pairs[(index*2)+1]->priority > heap->pairs[index*2]->priority)
+            {
+                add = (index*2)+1;
+            }
+        }
+        if (add == 0) {return;}
+        pair* temp = heap->pairs[index];
+        heap->pairs[index] = heap->pairs[add];
+        heap->pairs[add] = temp;
+        index = add;
     }
+
+    // while (index < heap->current_length){
+    //     if ((index*2)+1 < heap->current_length){
+    //         if (heap->pairs[(index*2)+1]->priority < heap->pairs[index]->priority && heap->pairs[index*2]->priority < heap->pairs[index]->priority){
+    //             // this means the heap order has been restored
+    //             return;
+    //         }
+    //         if (heap->pairs[(index*2)+1]->priority > heap->pairs[index*2]->priority){
+    //             pair* temp = heap->pairs[index];
+    //             heap->pairs[index] = heap->pairs[(index*2)+1];
+    //             heap->pairs[(index*2)+1] = temp;
+    //             index = (index*2) + 1;
+    //         }
+    //         else{
+    //             if (heap->pairs[(index*2)+1]->priority < heap->pairs[index*2]->priority){
+    //                 pair* temp = heap->pairs[index];
+    //                 heap->pairs[index] = heap->pairs[index*2];
+    //                 heap->pairs[index*2] = temp;
+    //                 index *= 2;
+    //             }
+    //             else{
+    //                 return;
+    //             }
+    //         }
+            
+    //     }
+    //     else{
+    //         if (index*2 < heap->current_length){
+    //             if (heap->pairs[index*2]->priority < heap->pairs[index]->priority){
+    //                 // again, restored heap order.
+    //                 return;
+    //             }
+    //             pair* temp = heap->pairs[index];
+    //             heap->pairs[index] = heap->pairs[index*2];
+    //             heap->pairs[index*2] = temp;
+    //             index *= 2;
+    //         }
+    //         else{
+    //             // it's a leaf node so to speak, so naturally order has been restored.
+    //             return;
+    //         }
+    //     }
+        
+    // }
 }
 
 int heap_max_delete(binaryHeap* heap){
-    if (heap->current_length < 1){
-        return NULL;
-    } 
+    if (heap->current_length < 1) {return NULL;} 
     int returnable = heap->pairs[1]->value;
+    pair* freeable = heap->pairs[1];
     heap->pairs[1] = heap->pairs[heap->current_length];
-    free(heap->pairs[heap->current_length]);
+    free(freeable);
     heap->current_length--;
     heap_sink(heap);
     return returnable;
@@ -128,7 +149,7 @@ binaryHeap* create_binary_heap(int maximum_length){
 }
 
 void print_binary_heap(binaryHeap* heap){
-    for (int index = 1; index < heap->current_length; index++){
+    for (int index = 1; index < heap->current_length+1; index++){
         printf("index %d has value %d and priority %d\n", index, heap->pairs[index]->value, heap->pairs[index]->priority);
     }
 }
@@ -162,13 +183,22 @@ int main(void){
     } printf("\n");
 
     binaryHeap* heap = create_binary_heap(max_length);
-
     for (int index = 0; index < gen_num; index++){
         heap_insert(heap, input[index], input[index]);
     }
 
+
+
     print_binary_heap(heap);
     printf("order property is %d\n", check_heap_order_property(heap));
     printf("symmetry property is %d\n", check_heap_symmetry_property(heap));
-    printf("the dequeued value is %d and the length is now %d", heap_max_delete(heap), heap->current_length);
-}
+    printf("the dequeued value is %d and the length is now %d\n", heap_max_delete(heap), heap->current_length);
+    printf("%d is heap prop now\n", check_heap_order_property(heap));
+    
+
+    while (heap->current_length > 2){
+        printf("%d %d \n", heap_max_delete(heap), check_heap_order_property(heap));
+        // print_binary_heap(heap);
+        // printf("\n\n\n");
+    }
+// }
